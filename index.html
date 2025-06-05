@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+
+<div class="tripdiary">
+    <img src="img/top3.png" alt="くまこの旅行記タイトル" class="imgtrip"> 
+</div>
+
+<div class="mapg">
+<!-- メモ風の二本線 -->
+
+<div class="main-container">
+<div id="diary-list" style="display: none;"></div>
+<div id="diary-detail" style="display: none;"></div>
+
+<div class="topbutton">
+    <button type="menu">新規作成</button>
+    <button type="menu">日記一覧</button>
+    <button type="menu">お気に入り</button>    
+
+</div>
+
+<div class="double-line-deco">
+</div>
+
+<div class="form">
+        <img src="img/hikouki.png" alt="飛行機の写真" class="imghikouki">
+
+
+    <div class="form-top">
+        <div class="form-block">
+            <div class="formtitle"><label for="hiduke">日付</label></div>
+            <input type="date" name="hiduke" class="formcontent-hiduke">    
+        </div>
+
+
+        <div class="form-block">
+            <div class="formtitle"><label for="spot">行き先</label></div>
+            <input type="text" name="spot" class="formcontent-spot">    
+        </div>
+    </div>
+
+    <div class="formtitle"><label for="kanso">感想</label></div>
+    <textarea name="kanso" class="formcontent-kanso" rows="4"></textarea>
+
+    <div class="form-memo-photo-schedule">
+        
+        <div class="form-left">
+
+            <div class="memo">
+                <div class="formtitle"><label for="memo">メモ</label></div>
+                <textarea name="memo" class="formcontent-memo" rows="4"></textarea>
+            </div>
+            <img src="img/car2.png" alt="車の写真" class="imgcar">
+
+            <div class="photo">
+                <div class="formtitle"><label for="photoInput">画像</label></div>
+              
+                <label class="custom-file-upload">
+                  <input type="file" id="photoInput" accept="image/*" />
+                  画像を選ぶ
+                </label>
+                <img id="previewImage" class="preview-img" />
+
+              </div>
+              
+        </div>
+
+        <div class="form-right">
+
+            <div class="formtitle"><label for="schedule">スケジュール</label></div>
+            
+            <div class="schedule">
+
+            <div class="schedule-row">
+                <input type="time">
+                <input type="text" name="schedule1" class="formcontent-schedule1">
+            </div>
+            <div class="schedule-row">
+                <input type="time" >
+                <input type="text" name="schedule2" class="formcontent-schedule2">
+            </div>
+            <div class="schedule-row">
+                <input type="time" name="schedule3" class="formcontent-schedule3">
+                <input type="text" name="schedule3" class="formcontent-schedule3">
+            </div>
+            <div class="schedule-row">
+                <input type="time" name="schedule4" class="formcontent-schedule4">
+                <input type="text" name="schedule4" class="formcontent-schedule4">
+            </div>
+            <div class="schedule-row">
+                <input type="time" name="schedule5" class="formcontent-schedule5">
+                <input type="text" name="schedule5" class="formcontent-schedule5">
+            </div>
+            <div class="schedule-row">
+                <input type="time" name="schedule6" class="formcontent-schedule6">
+                <input type="text" name="schedule6" class="formcontent-schedule6">
+            </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<button type="submit">
+    保存
+</button>
+
+<div>
+</div>
+
+</div>
+
+</div>
+
+</body>
+<script>
+    let diaryList = [];
+    let selectedImage = "";
+
+document.getElementById('photoInput').addEventListener('change', function () {
+  const file = this.files[0];
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    document.getElementById('previewImage').src = e.target.result;
+    selectedImage = e.target.result; // Base64文字列を保存
+  };
+  if (file) {
+    reader.readAsDataURL(file);
+  }
+});
+
+
+    //  保存処理
+    document.querySelector('button[type="submit"]').addEventListener('click', () => {
+  const date = document.querySelector('input[name="hiduke"]').value;
+  const spot = document.querySelector('input[name="spot"]').value;
+  const kanso = document.querySelector('textarea[name="kanso"]').value;
+  const memo = document.querySelector('textarea[name="memo"]').value;
+
+
+  // スケジュールの取得
+  const scheduleRows = document.querySelectorAll('.schedule-row');
+  const schedule = [];
+  scheduleRows.forEach(row => {
+    const time = row.querySelector('input[type="time"]').value;
+    const text = row.querySelector('input[type="text"]').value;
+    if (time || text) {
+      schedule.push({ time, text });
+    }
+  });
+
+  if (!date || !spot) {
+    alert("日付と行き先を入力してね！");
+    return;
+  }
+
+  const diary = {
+    id: Date.now(),
+    date,
+    spot,
+    kanso,
+    memo,
+    schedule,
+    image: selectedImage,
+  };
+
+    // ローカルストレージに保存
+    let diaries = JSON.parse(localStorage.getItem("diaries")) || [];
+  diaries.push(diary);
+  localStorage.setItem("diaries", JSON.stringify(diaries));
+ alert("保存しました！");
+//   clearForm();
+
+  showDiaries(); // 表示更新
+  diaryForm.reset(); // 入力フォームをリセット
+
+  selectedImage = "";
+document.getElementById('photoInput').value = ""; // input自体をクリア
+document.getElementById('previewImage').src = ""; // プレビューも非表示に
+
+});
+
+    // 初期読み込み
+    window.addEventListener('load', () => {
+      const stored = localStorage.getItem("diaries");
+      if (stored) {
+        diaryList = JSON.parse(stored);
+      }
+    });
+  
+    // 日記一覧表示
+    document.querySelectorAll('button[type="menu"]')[1].addEventListener('click', () => {
+      const listDiv = document.getElementById('diary-list');
+      listDiv.innerHTML = `<h2 style="color: #9f6700;">日記一覧</h2>`;
+  
+diaryList.forEach(diary => {
+  const entry = document.createElement('div');
+  entry.style.display = "flex";
+  entry.style.justifyContent = "space-between";
+  entry.style.alignItems = "center";
+  entry.style.marginBottom = "10px";
+  entry.style.borderBottom = "1px solid #ccc";
+  entry.style.padding = "5px 0";
+
+  const info = document.createElement('span');
+  info.textContent = `${diary.date} - ${diary.spot}`;
+  info.style.cursor = "pointer";
+  info.style.color = "#9f6700";
+  info.addEventListener('click', () => showDiary(diary.id));
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = "削除";
+  deleteBtn.style.background = "#c0392b";
+  deleteBtn.style.color = "white";
+  deleteBtn.style.border = "none";
+  deleteBtn.style.borderRadius = "5px";
+  deleteBtn.style.padding = "5px 10px";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // 詳細表示を防ぐ
+    deleteDiary(diary.id);
+  });
+
+  entry.appendChild(info);
+  entry.appendChild(deleteBtn);
+  listDiv.appendChild(entry);
+});
+  
+      listDiv.style.display = "block";
+      document.querySelector('.form').style.display = "none";
+      document.getElementById('diary-detail').style.display = "none";
+    });
+  
+    // 日記詳細表示
+    function showDiary(id) {
+  const diary = diaryList.find(d => d.id === id);
+  const detailDiv = document.getElementById('diary-detail');
+
+  detailDiv.innerHTML = `
+    <div style="color: #9f6700;">
+      <h2>${diary.date} - ${diary.spot}</h2>
+      <p><strong>感想:</strong> ${diary.kanso}</p>
+      <p><strong>メモ:</strong> ${diary.memo}</p>
+<p><strong>スケジュール:</strong></p>
+      <ul>
+        ${diary.schedule.map(s => `<li>${s.time} - ${s.text}</li>`).join("")}
+      </ul>
+      
+      ${
+        diary.image
+          ? `<p><strong>写真:</strong><br><img src="${diary.image}" style="max-width: 300px; border: 1px solid #ccc;" /></p>`
+          : ''
+      }
+      <button class="button-style" onclick="backToList()">戻る</button>
+    </div>
+  `;
+  detailDiv.style.display = "block";
+  document.getElementById('diary-list').style.display = "none";
+}
+  
+    // 一覧に戻る
+    function backToList() {
+      document.getElementById('diary-detail').style.display = "none";
+      document.getElementById('diary-list').style.display = "block";
+    }
+  
+    // 新規作成ボタン（最初の画面に戻す）
+    document.querySelectorAll('button[type="menu"]')[0].addEventListener('click', () => {
+      clearForm();
+      document.querySelector('.form').style.display = "block";
+      document.getElementById('diary-list').style.display = "none";
+      document.getElementById('diary-detail').style.display = "none";
+    });
+  
+    // フォームの初期化
+    function clearForm() {
+      document.querySelector('input[name="hiduke"]').value = "";
+      document.querySelector('input[name="spot"]').value = "";
+      document.querySelector('textarea[name="kanso"]').value = "";
+      document.querySelector('textarea[name="memo"]').value = "";
+    }
+    function deleteDiary(id) {
+    // diaryListから該当IDの日記を除外
+    diaryList = diaryList.filter(diary => diary.id !== id);
+    // localStorageにも保存し直す
+    localStorage.setItem("diaries", JSON.stringify(diaryList));
+    // 一覧を再表示
+    document.querySelectorAll('button[type="menu"]')[1].click();
+}
+
+  </script>
+
+</html>
